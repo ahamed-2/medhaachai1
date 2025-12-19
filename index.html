@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultra Pro Exam System</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Tiro+Bangla&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+:root {
+  --glass: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --bg-gradient: linear-gradient(135deg, #1e272e, #485460);
+  --accent: #00cec9;
+}
+
+* { box-sizing: border-box; outline: none; }
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg-gradient);
+  color: #fff;
+  min-height: 100vh;
+}
+
+.container { max-width: 950px; margin: 0 auto; padding: 20px; }
+.hidden { display: none !important; }
+
+/* UI CARDS */
+.card {
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  margin-bottom: 20px;
+  animation: fadeUp 0.5s ease;
+}
+@keyframes fadeUp { from {opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
+
+h2, h3 { text-align: center; color: var(--accent); margin-top: 0; }
+p { color: #dfe6e9; }
+
+input, select, textarea {
+  width: 100%; padding: 12px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: 6px; color: #fff; margin-bottom: 10px;
+}
+textarea { height: 150px; font-family: monospace; font-size: 13px; }
+option { background: #2d3436; color: #fff; }
+
+button {
+  width: 100%; padding: 12px; border: none; border-radius: 6px;
+  background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+  color: #fff; font-weight: 600; cursor: pointer; margin-top: 5px;
+  transition: 0.3s;
+}
+button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.btn-red { background: #d63031; }
+.btn-dark { background: #2d3436; }
+.btn-blue { background: #0984e3; }
+.btn-dev { background: linear-gradient(90deg, #00cec9, #0984e3); }
+.btn-yellow { background: #f1c40f; color: #000; }
+
+/* PAPER PREVIEW */
+.paper-container {
+  background: #fff;
+  color: #000;
+  padding: 40px;
+  font-family: 'Tiro Bangla', serif;
+  border-radius: 5px;
+  margin-top: 30px;
+  position: relative;
+}
+.paper-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+.paper-body { column-count: 2; column-gap: 40px; column-rule: 1px solid #ccc; }
+.q-item { break-inside: avoid; margin-bottom: 15px; font-size: 15px; }
+.q-options { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-left: 15px; font-size: 14px; }
+
+/* EXAM UI */
+.mcq-box { background: rgba(0,0,0,0.25); padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+.opt-btn { text-align: left; background: rgba(255,255,255,0.05); margin: 5px 0; display: flex; align-items: center; gap: 10px; }
+.opt-btn:hover { background: rgba(255,255,255,0.1); }
+.correct-ans { background: rgba(0, 184, 148, 0.6) !important; border-left: 4px solid #00b894; }
+.wrong-ans { background: rgba(214, 48, 49, 0.6) !important; border-left: 4px solid #d63031; }
+.disabled { pointer-events: none; opacity: 0.9; }
+
+/* REVIEW SCRIPT STYLES */
+.review-item { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid #ccc;}
+.review-correct { border-left-color: #00b894; }
+.review-wrong { border-left-color: #d63031; }
+
+/* LEADERBOARD */
+table { width: 100%; border-collapse: collapse; margin-top: 15px; color: #fff; }
+th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+th { background: rgba(0,0,0,0.3); color: var(--accent); }
+
+/* STATS BOX */
+.stats-box {
+    display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0;
+}
+.stat-badge {
+    background: rgba(9, 132, 227, 0.3); padding: 5px 15px; 
+    border-radius: 20px; border: 1px solid #0984e3; font-size: 14px;
+}
+
+/* DEV PROFILE */
+.dev-profile { text-align: center; padding: 20px; }
+.dev-img { 
+    width: 120px; height: 120px; border-radius: 50%; 
+    border: 4px solid var(--accent); object-fit: cover; margin-bottom: 15px;
+    box-shadow: 0 0 20px rgba(0, 206, 201, 0.4);
+}
+.dev-link { display: inline-block; margin-top: 10px; color: #a29bfe; text-decoration: none; font-size: 18px; border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 30px; transition: 0.3s; }
+.dev-link:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+@media print {
+  body * { visibility: hidden; }
+  .paper-container, .paper-container * { visibility: visible; }
+  .paper-container { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; box-shadow: none; }
+  .no-print { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="card" id="home">
+    <h2><i class="fas fa-university"></i> Exam Portal</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:20px;">
+      <button onclick="nav('adminLogin')"><i class="fas fa-user-cog"></i> Admin Panel</button>
+      <button onclick="nav('studentLogin')" class="btn-dark"><i class="fas fa-user-graduate"></i> Student Panel</button>
+    </div>
+    <button onclick="nav('devInfo')" class="btn-dev" style="margin-top: 15px;">
+      <i class="fas fa-code"></i> Developer Info
+    </button>
+  </div>
+
+  <div class="card hidden" id="devInfo">
+    <div class="dev-profile">
+      <img src="https://i.ibb.co/vz0wJqR/7DPv5gW.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2202/2202112.png'" alt="Ahamed Rahim" class="dev-img">
+      
+      <h2>Developer Profile</h2>
+      <h3 style="color: #fff; margin-bottom: 5px;">Ahamed Rahim</h3>
+      <p>Full Stack Developer & Bot Creator</p>
+      <a href="https://ahamed-rahim.pages.dev/" target="_blank" class="dev-link">
+        <i class="fas fa-globe"></i> Visit Website
+      </a>
+      <br><br>
+      <button onclick="nav('home')" class="btn-red" style="width: auto; padding: 10px 30px;">Back</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="adminLogin">
+    <h3>Admin Login</h3>
+    <input type="password" id="admKey" placeholder="Enter Key">
+    <button onclick="checkAdmin()">Login</button>
+    <button onclick="nav('home')" class="btn-red">Back</button>
+  </div>
+
+  <div class="card hidden" id="adminDash">
+    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+      <h3>Admin Panel</h3>
+      <button onclick="nav('home')" style="width:auto;" class="btn-red">Logout</button>
+    </div>
+
+    <div id="statsBox" class="stats-box"></div>
+
+    <div style="margin-bottom:15px; display:flex; gap:10px;">
+      <button onclick="toggleUploadMode('single')" class="btn-blue" style="width:auto;">Single Question</button>
+      <button onclick="toggleUploadMode('bulk')" class="btn-dark" style="width:auto;">Bulk Upload</button>
+    </div>
+
+    <div id="singleUploadBox" style="background:rgba(0,0,0,0.2); padding:20px; border-radius:10px;">
+      <h4>Add Question</h4>
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
+        <input id="subName" placeholder="Subject Name (e.g. বাংলা ১ম পত্র)">
+        <input id="examDuration" type="number" placeholder="Time (Min)" value="25">
+      </div>
+      <input id="qText" placeholder="Question Title">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <input id="opA" placeholder="Option A">
+        <input id="opB" placeholder="Option B">
+        <input id="opC" placeholder="Option C">
+        <input id="opD" placeholder="Option D">
+      </div>
+      <label style="font-size:14px; color:#00cec9;">Which one is Correct?</label>
+      <select id="correctOption" style="background:#00b894; font-weight:bold;">
+        <option value="0">Option A is Correct</option>
+        <option value="1">Option B is Correct</option>
+        <option value="2">Option C is Correct</option>
+        <option value="3">Option D is Correct</option>
+      </select>
+      <button onclick="addQ()" style="background:#6c5ce7">Save Question</button>
+    </div>
+
+    <div id="bulkUploadBox" class="hidden" style="background:rgba(0,0,0,0.2); padding:20px; border-radius:10px;">
+      <h4>Bulk Upload</h4>
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
+        <input id="bulkSubName" placeholder="Subject Name">
+        <input id="bulkDuration" type="number" placeholder="Time (Min)" value="25">
+      </div>
+      <p style="font-size:12px; color:#aaa;">Format: <b>Question | Correct Ans | Wrong | Wrong | Wrong</b></p>
+      <textarea id="bulkText" placeholder="Example:
+বাংলাদেশের রাজধানী কোনটি? | ঢাকা | চট্টগ্রাম | খুলনা | বরিশাল"></textarea>
+      <button onclick="processBulk()" style="background:#e17055">Upload All</button>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button onclick="viewSection('paperPreview')" class="btn-dark">👁 Preview</button>
+      <button onclick="viewSection('leaderBoard')" class="btn-dark">🏆 Result</button>
+      <button onclick="clearData()" class="btn-red">🗑 Reset</button>
+    </div>
+
+    <div id="paperPreview" class="hidden">
+      <div class="paper-container">
+        <button onclick="window.print()" class="no-print" style="position:absolute; top:10px; right:10px; width:auto; background:#0984e3;">Print</button>
+        <div id="paperContent"></div>
+      </div>
+    </div>
+
+    <div id="leaderBoard" class="hidden">
+      <div id="resultTable"></div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="studentLogin">
+    <h3>Student Portal</h3>
+    <input id="stdKey" placeholder="Enter Key">
+    <button onclick="checkStudent()">Enter Exam Hall</button>
+    <button onclick="nav('home')" class="btn-red">Back</button>
+  </div>
+
+  <div class="card hidden" id="examHall">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 id="examSubTitle">Exam</h3>
+      <div style="background:#d63031; padding:5px 15px; border-radius:20px;">
+        ⏳ <span id="timer">00:00</span>
+      </div>
+    </div>
+    
+    <select id="examSubject" onchange="startExam()" style="margin-top:15px; cursor:pointer;">
+      <option value="">Select Subject</option>
+    </select>
+    
+    <div id="examArea" style="margin-top:20px;"></div>
+
+    <div id="submitBox" class="hidden" style="margin-top:30px; border-top:1px solid #fff; padding-top:20px;">
+      <h3 style="color:#00b894">Exam Finished!</h3>
+      <input id="sName" placeholder="Full Name">
+      <input id="sRoll" placeholder="Roll No">
+      <input id="sSchool" placeholder="School Name">
+      <button onclick="submitPaper()">Submit & See Result</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="resultCard">
+    <h2>Result Sheet</h2>
+    <div style="text-align:center; padding:20px;">
+      <h1 id="finalScore" style="font-size:40px; margin:10px 0;"></h1>
+      <p id="negMarkDisplay" style="color:#e17055"></p>
+      <h3 id="finalStatus"></h3>
+      <div id="studentInfoDisplay" style="opacity:0.8; font-size:14px;"></div>
+      
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
+        <button onclick="viewScript()" class="btn-yellow">👁 View Answer Script</button>
+        <button onclick="window.print()" class="btn-blue">📥 Download PDF</button>
+      </div>
+      <button onclick="nav('home')" class="btn-red">Go Home</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="scriptReview">
+    <h3>Answer Script Review</h3>
+    <div id="scriptContent" style="max-height: 400px; overflow-y: auto;"></div>
+    <button onclick="nav('resultCard')" class="btn-dark">Back to Result</button>
+  </div>
+
+</div>
+
+<script>
+// --- CONFIGURATION & SECURITY ---
+// Keys are encoded in Base64 so they are not directly visible in simple view.
+// Admin Key: "admin" -> YWRtaW4=
+// Student Key: "1234" -> MTIzNA==
+const ADM_HASH = "YWRtaW4="; 
+const STD_HASH = "MTIzNA==";
+
+const DB_Q = "final_exam_questions"; 
+const DB_R = "final_exam_results";
+
+// Global Variables
+let questions = [];
+let results = [];
+let currentQs = [];
+let userAnswers = [];
+let score = 0;
+let wrong = 0;
+let examInterval;
+let cheatCount = 0;
+let examRunning = false;
+
+const el = id => document.getElementById(id);
+const toBn = n => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
+const optBn = ['ক', 'খ', 'গ', 'ঘ'];
+
+// --- ANTI-CHEAT SYSTEM ---
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden && examRunning) {
+    cheatCount++;
+    if(cheatCount === 1) {
+      alert("⚠️ WARNING! Tab switching is not allowed. Next time exam will be submitted automatically.");
+    } else if(cheatCount >= 2) {
+      alert("🚫 Cheat Detected! Auto Submitting Exam.");
+      finishExam();
+    }
+  }
+});
+
+// Load/Save Data
+function loadData() {
+  questions = JSON.parse(localStorage.getItem(DB_Q) || "[]");
+  results = JSON.parse(localStorage.getItem(DB_R) || "[]");
+}
+function saveData() {
+  localStorage.setItem(DB_Q, JSON.stringify(questions));
+  localStorage.setItem(DB_R, JSON.stringify(results));
+}
+
+function nav(id) {
+  document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+  el(id).classList.remove('hidden');
+}
+
+/* --- ADMIN --- */
+function checkAdmin() {
+  // Checks if encoded value matches
+  if(btoa(el('admKey').value) === ADM_HASH) {
+    loadData(); nav('adminDash'); renderPaper(); renderResults(); updateStats();
+  } else alert("Wrong Key!");
+}
+
+function updateStats() {
+    // Counts questions per subject
+    const counts = {};
+    questions.forEach(q => { counts[q.subject] = (counts[q.subject] || 0) + 1; });
+    
+    let html = '';
+    if(Object.keys(counts).length === 0) html = '<span class="stat-badge">No Questions Added</span>';
+    else {
+        for(let sub in counts) {
+            html += `<span class="stat-badge">${sub}: ${toBn(counts[sub])}টি</span>`;
+        }
+    }
+    el('statsBox').innerHTML = html;
+}
+
+function toggleUploadMode(mode) {
+  if(mode === 'single') {
+    el('singleUploadBox').classList.remove('hidden'); el('bulkUploadBox').classList.add('hidden');
+  } else {
+    el('singleUploadBox').classList.add('hidden'); el('bulkUploadBox').classList.remove('hidden');
+  }
+}
+
+function addQ() {
+  const s = el('subName').value.trim();
+  const q = el('qText').value.trim();
+  const dur = el('examDuration').value;
+  const options = [el('opA').value, el('opB').value, el('opC').value, el('opD').value];
+  const correctIdx = parseInt(el('correctOption').value);
+
+  if(!s || !q || options.some(o=>!o)) return alert("Fill all fields!");
+
+  loadData();
+  questions.push({ subject: s, text: q, options: options, correct: options[correctIdx], duration: dur });
+  saveData();
+  
+  el('qText').value = ""; el('opA').value = ""; el('opB').value = ""; el('opC').value = ""; el('opD').value = "";
+  alert("Question Added!"); renderPaper(); updateStats();
+}
+
+function processBulk() {
+  const s = el('bulkSubName').value.trim();
+  const dur = el('bulkDuration').value;
+  const raw = el('bulkText').value.trim();
+  if(!s || !raw) return alert("Data required!");
+
+  loadData();
+  const lines = raw.split('\n');
+  let count = 0;
+  lines.forEach(line => {
+    const parts = line.split('|').map(p => p.trim());
+    if(parts.length >= 5) {
+      questions.push({ 
+        subject: s, text: parts[0], options: [parts[1], parts[2], parts[3], parts[4]], 
+        correct: parts[1], duration: dur 
+      });
+      count++;
+    }
+  });
+  saveData();
+  el('bulkText').value = ""; alert(count + " questions uploaded!"); renderPaper(); updateStats();
+}
+
+function viewSection(id) {
+  el('paperPreview').classList.add('hidden'); el('leaderBoard').classList.add('hidden');
+  el(id).classList.remove('hidden');
+  if(id === 'paperPreview') renderPaper();
+  if(id === 'leaderBoard') renderResults();
+}
+
+function renderPaper() {
+  loadData();
+  if(questions.length === 0) { el('paperContent').innerHTML = "<p>No Questions.</p>"; return; }
+  const currentSubject = questions[questions.length-1].subject;
+  const paperQs = questions.filter(q => q.subject === currentSubject);
+  
+  let html = `<div class="paper-header"><h2>মডেল টেস্ট পরীক্ষা</h2><p>বিষয়: ${currentSubject}</p><span>সময়: ${questions[questions.length-1].duration} মি | পূর্ণমান: ${toBn(paperQs.length)}</span></div><div class="paper-body">`;
+  paperQs.forEach((q, idx) => {
+    const realIndex = questions.indexOf(q);
+    html += `<div class="q-item"><b>${toBn(idx+1)}। ${q.text}</b> <span onclick="deleteQ(${realIndex})" class="no-print" style="cursor:pointer;color:red;">❌</span>
+    <div class="q-options">${q.options.map((opt, i) => `<div>(${optBn[i]}) ${opt}</div>`).join('')}</div></div>`;
+  });
+  el('paperContent').innerHTML = html + "</div>";
+}
+
+function deleteQ(i) {
+  if(confirm("Delete question?")) { loadData(); questions.splice(i, 1); saveData(); renderPaper(); updateStats(); }
+}
+
+function renderResults() {
+  loadData();
+  let html = `<table><tr><th>Rank</th><th>Name</th><th>Score</th><th>Status</th></tr>`;
+  results.sort((a,b) => b.finalScore - a.finalScore);
+  results.forEach((r, i) => {
+    html += `<tr><td>#${i+1}</td><td>${r.name}</td><td>${r.finalScore}/${r.total}</td><td style="color:${r.pass?'#00b894':'#d63031'}">${r.status}</td></tr>`;
+  });
+  el('resultTable').innerHTML = html + "</table>";
+}
+
+function clearData() {
+  if(confirm("Delete ALL Data?")) { localStorage.removeItem(DB_Q); localStorage.removeItem(DB_R); location.reload(); }
+}
+
+/* --- STUDENT --- */
+function checkStudent() {
+  if(btoa(el('stdKey').value) === STD_HASH) {
+    loadData(); nav('examHall');
+    const subs = [...new Set(questions.map(q => q.subject))];
+    el('examSubject').innerHTML = subs.length ? `<option value="">Select Subject</option>` + subs.map(s => `<option value="${s}">${s}</option>`).join('') : `<option>No Questions</option>`;
+  } else alert("Wrong Key!");
+}
+
+function startExam() {
+  const sub = el('examSubject').value;
+  if(!sub) return;
+
+  loadData();
+  currentQs = questions.filter(q => q.subject === sub);
+  if(!currentQs.length) return;
+
+  // Initialize Exam State
+  score = 0; wrong = 0; cheatCount = 0; examRunning = true;
+  userAnswers = new Array(currentQs.length).fill(null);
+
+  el('examArea').innerHTML = "";
+  el('submitBox').classList.add('hidden');
+  el('examArea').classList.remove('hidden');
+  el('examSubTitle').innerText = sub;
+
+  currentQs.forEach((q, idx) => {
+    let opts = [...q.options];
+    opts.sort(() => Math.random() - 0.5);
+
+    let div = document.createElement('div');
+    div.className = "mcq-box";
+    div.innerHTML = `<h4>${toBn(idx+1)}. ${q.text}</h4>`;
+
+    opts.forEach(opt => {
+      let btn = document.createElement('button');
+      btn.className = "opt-btn";
+      btn.innerHTML = `<i class="far fa-circle"></i> ${opt}`;
+      btn.onclick = () => {
+        div.querySelectorAll('.opt-btn').forEach(b => b.classList.add('disabled'));
+        
+        // Save Answer for Review
+        userAnswers[idx] = { question: q.text, selected: opt, correct: q.correct };
+
+        if(opt === q.correct) {
+          btn.classList.add('correct-ans'); btn.innerHTML = `<i class="fas fa-check-circle"></i> ${opt}`;
+          score++;
+        } else {
+          btn.classList.add('wrong-ans'); btn.innerHTML = `<i class="fas fa-times-circle"></i> ${opt}`;
+          wrong++;
+        }
+      };
+      div.appendChild(btn);
+    });
+    el('examArea').appendChild(div);
+  });
+
+  // Dynamic Timer
+  let duration = parseInt(currentQs[0].duration) || 25;
+  startTimer(duration);
+  
+  let btn = document.createElement('button');
+  btn.innerText = "Finish Exam";
+  btn.onclick = finishExam;
+  btn.style.marginTop = "20px";
+  el('examArea').appendChild(btn);
+}
+
+function startTimer(min) {
+  clearInterval(examInterval);
+  let timeLeft = min * 60;
+  updateTimer(timeLeft);
+  examInterval = setInterval(() => {
+    timeLeft--; updateTimer(timeLeft);
+    if(timeLeft <= 0) { clearInterval(examInterval); finishExam(); }
+  }, 1000);
+}
+
+function updateTimer(t) {
+  let m = Math.floor(t / 60); let s = t % 60;
+  el('timer').innerText = `${m}:${s<10?'0'+s:s}`;
+}
+
+function finishExam() {
+  clearInterval(examInterval);
+  examRunning = false;
+  el('examArea').classList.add('hidden');
+  el('submitBox').classList.remove('hidden');
+}
+
+function submitPaper() {
+  const name = el('sName').value;
+  const roll = el('sRoll').value;
+  if(!name || !roll) return alert("Enter Name & Roll");
+
+  const total = currentQs.length;
+  // Negative Marking Calculation
+  const negMark = wrong * 0.25;
+  const finalScore = Math.max(0, score - negMark);
+  const pass = finalScore >= (total * 0.33);
+  
+  loadData();
+  results.push({ name, roll, finalScore, total, pass, status: pass?"PASS":"FAIL", school: el('sSchool').value });
+  saveData();
+
+  nav('resultCard');
+  el('finalScore').innerText = `${finalScore} / ${total}`;
+  el('negMarkDisplay').innerText = `(Correct: ${score}, Wrong: ${wrong}, Minus: -${negMark})`;
+  el('finalScore').style.color = pass ? "#00b894" : "#d63031";
+  el('finalStatus').innerText = pass ? "অভিনন্দন! তুমি পাস করেছো" : "দুঃখিত! তুমি ফেল করেছো";
+  el('studentInfoDisplay').innerText = `Name: ${name} | Roll: ${roll}`;
+}
+
+// Fixed View Script Function
+function viewScript() {
+  nav('scriptReview');
+  let html = "";
+  
+  if(!userAnswers.length || userAnswers.every(a => a === null)) {
+    el('scriptContent').innerHTML = "<p>No answers recorded.</p>";
+    return;
+  }
+
+  userAnswers.forEach((ans, i) => {
+    if(ans) {
+      const isCorrect = ans.selected === ans.correct;
+      html += `<div class="review-item ${isCorrect ? 'review-correct' : 'review-wrong'}">
+        <p><strong>Q${i+1}: ${ans.question}</strong></p>
+        <p>You: <span class="user-choice">${ans.selected}</span> ${isCorrect?'✔️':'❌'}</p>
+        ${!isCorrect ? `<p>Correct: <span class="actual-ans">${ans.correct}</span></p>` : ''}
+      </div>`;
+    } else {
+        html += `<div class="review-item" style="border-left:3px solid orange;">
+            <p><strong>Q${i+1}: Not Answered</strong></p>
+        </div>`;
+    }
+  });
+  
+  el('scriptContent').innerHTML = html;
+}
+</script>
+</body>
+</html>
